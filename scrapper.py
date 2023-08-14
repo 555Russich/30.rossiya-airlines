@@ -166,5 +166,5 @@ async def _download_reports_for_month(
             log_and_print(f'{i}/{len(flights)} | Parsed {len(urls)=}')
 
             for url in urls:
-                log_and_print(f'Start downloading url={url}')
+                log_and_print(f'Start downloading {url=}')
                 await scraper.download_file(url)
