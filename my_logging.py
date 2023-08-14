@@ -15,7 +15,7 @@ def get_logger(filepath: Path) -> None:
         datefmt='%d.%m.%Y %H:%M:%S',
         style='{',
         handlers=[
-            logging.FileHandler(filepath, mode='a'),
+            logging.FileHandler(filepath, mode='a', encoding='utf-8'),
             logging.StreamHandler(sys.stdout),
         ]
     )
@@ -24,5 +24,5 @@ def get_logger(filepath: Path) -> None:
 
 
 def log_and_print(msg: str) -> None:
-    logging.info(msg.encode('utf-8'))
+    logging.info(msg)
     print(msg)
