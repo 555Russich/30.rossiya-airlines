@@ -24,5 +24,5 @@ def get_logger(filepath: Path) -> None:
 
 
 def log_and_print(msg: str) -> None:
-    logging.info(msg)
+    logging.info(msg.encode('utf-8').decode('utf-8'))
     print(msg)
