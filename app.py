@@ -3,8 +3,30 @@ import sys
 from datetime import datetime
 from multiprocessing import freeze_support
 
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
+from PyQt5 import sip  # noqa
+from PyQt5.QtCore import (
+    QDate,
+    QSize,
+    QMetaObject,
+    QCoreApplication,
+    QThread,
+    QObject,
+    pyqtSignal
+)
+from PyQt5.QtWidgets import (
+    QApplication,
+    QMainWindow,
+    QWidget,
+    QLineEdit,
+    QVBoxLayout,
+    QDateEdit,
+    QHBoxLayout,
+    QSpacerItem,
+    QSizePolicy,
+    QPushButton,
+    QTextEdit,
+    QFormLayout,
+)
 
 from config import FILEPATH_DEFAULT_AUTH
 from scrapper import download_reports_for_month
