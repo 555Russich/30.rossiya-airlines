@@ -119,12 +119,12 @@ class Parser:
 
         for button in self._soup.find_all('button', {'title': 'Отчёт по рейсу'}):
             onclick = button.get('onclick')
-            reg_res = self.re_report_hrefs.search(onclick)
-
-            if reg_res:
-                href = reg_res.group(0)
-                if href not in hrefs:
-                    hrefs.append(href)
+            if onclick:
+                reg_res = self.re_report_hrefs.search(onclick)
+                if reg_res:
+                    href = reg_res.group(0)
+                    if href not in hrefs:
+                        hrefs.append(href)
         
         return hrefs
 
