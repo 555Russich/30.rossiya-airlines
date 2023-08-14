@@ -10,7 +10,6 @@ def get_logger(filepath: Path) -> None:
     """
     logging.basicConfig(
         level=logging.DEBUG,
-        encoding='utf-8',
         format="[{asctime},{msecs:03.0f}]:[{levelname}]:{message}",
         datefmt='%d.%m.%Y %H:%M:%S',
         style='{',
