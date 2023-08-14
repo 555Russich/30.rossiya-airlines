@@ -21,3 +21,8 @@ def get_logger(filepath: Path) -> None:
     )
 
     logging.getLogger('asyncio').setLevel(logging.WARNING)
+
+
+def log_and_print(msg: str, log_lvl=logging.INFO) -> None:
+    logging.log(level=log_lvl, msg=msg)
+    print(msg)
