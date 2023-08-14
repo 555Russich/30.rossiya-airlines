@@ -1,4 +1,3 @@
-import asyncio
 import ssl
 import json
 from re import compile
@@ -156,11 +155,3 @@ async def download_reports_for_month(
             for url in urls:
                 log_and_print(f'Start downloading {url=}')
                 await scraper.download_file(url)
-
-
-async def main():
-    await download_reports_for_month(login='76026', password='Sdf123sdf', month='01.06.2023')
-
-
-if __name__ == '__main__':
-    asyncio.run(main())
