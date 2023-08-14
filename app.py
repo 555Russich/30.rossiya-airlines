@@ -101,15 +101,13 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"Scraper rossiya-airlines", None))
 
-        self.edit_login.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Login", None))
-        self.edit_password.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Password", None))
         if FILEPATH_DEFAULT_AUTH.exists():
             login, password = FILEPATH_DEFAULT_AUTH.read_text().split('\n')
             self.edit_login.setText(login)
             self.edit_password.setText(password)
         else:
-            self.edit_login.setText("")
-            self.edit_password.setText("")
+            self.edit_login.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Login", None))
+            self.edit_password.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Password", None))
 
         now = datetime.now()
         self.dateEdit.setDate(QDate(now.year, now.month, now.day))
