@@ -1,3 +1,4 @@
+import logging
 import ssl
 import json
 from re import compile
@@ -129,6 +130,18 @@ class Parser:
 
 
 async def download_reports_for_month(
+        login: str,
+        password: str,
+        month: str
+) -> None:
+    try:
+        await _download_reports_for_month(login=login, password=password, month=month)
+    except Exception as e:
+        logging.error(e, exc_info=True)
+        raise e
+
+
+async def _download_reports_for_month(
         login: str,
         password: str,
         month: str
