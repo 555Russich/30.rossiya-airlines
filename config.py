@@ -4,7 +4,7 @@ from pathlib import Path
 from my_logging import get_logger
 
 if getattr(sys, 'frozen', False):
-    DIR_PROJECT = Path(sys.executable)
+    DIR_PROJECT = Path(sys.executable).parent
 else:
     DIR_PROJECT = Path(__file__).resolve().parent
 print(f'{DIR_PROJECT=}')
