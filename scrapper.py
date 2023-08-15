@@ -4,6 +4,8 @@ import json
 from re import compile
 from dataclasses import dataclass
 from urllib.parse import urlparse, parse_qs
+from pathlib import Path
+from datetime import datetime
 
 from aiohttp import ClientSession, TCPConnector
 from bs4 import BeautifulSoup
@@ -72,18 +74,14 @@ class Scraper:
         ) as resp:
             return await resp.text()
 
-    async def download_file(self, url: str) -> None:
+    async def download_file(self, url: str, filepath: Path) -> None:
         async with self.session.get(url) as resp:
-            with open(DIR_REPORTS / self.get_filename_from_url(url), 'wb') as f:
+            with open(filepath, 'wb') as f:
                 f.write(await resp.read())
 
     @staticmethod
-    def get_filename_from_url(url: str) -> str:
-        parsed_url = urlparse(url)
-        qs = parse_qs(parsed_url.query)
-        dt = qs.get('flight_date')[0].replace('-', '_')
-        n = qs.get('flight_number')[0]
-        return f'flight_report__{dt}__{n}.xlsx'
+    def get_filepath_by_flight_data(dt: str, n: str) -> Path:
+        return DIR_REPORTS / f'flight_report__{dt}__{n}.xlsx'
 
     async def __aenter__(self):
         conn = TCPConnector(ssl=self._ssl_context)
@@ -114,19 +112,35 @@ class Parser:
 
         return flights
 
-    def get_flight_report_hrefs(self) -> list[str]:
+    def get_flight_report_hrefs(self, month: str) -> list[str]:
         hrefs = []
 
-        for button in self._soup.find_all('button', {'title': 'Отчёт по рейсу'}):
-            onclick = button.get('onclick')
-            if onclick:
-                reg_res = self.re_report_hrefs.search(onclick)
-                if reg_res:
-                    href = reg_res.group(0)
-                    if href not in hrefs:
-                        hrefs.append(href)
+        table = self._soup.find('table', class_='table')
+        columns = [th.text for th in table.find('thead').find_all('th')]
+        column_idx_dt = columns.index('Дата и время вылета')
+        column_idx_target = columns.index('Цель полета')
+
+        for tr in table.find('tbody').find_all('tr', {'hidden': None}):
+            tds = tr.find_all('td')
+            dt = datetime.strptime(tds[column_idx_dt].text, '%d-%m-%Y %H:%M').strftime('%-m.%Y')
+            target = tds[column_idx_target].text
+            button_report = tr.find('button', {'title': 'Отчёт по рейсу'})
+
+            if dt in month and target == 'Р':
+                if onclick := button_report.get('onclick'):
+                    if reg_res := self.re_report_hrefs.search(onclick):
+                        if (href := reg_res.group(0)) not in hrefs:
+                            hrefs.append(href)
         
         return hrefs
+
+    @staticmethod
+    def get_flight_data_from_url(url: str) -> tuple[str, str]:
+        parsed_url = urlparse(url)
+        qs = parse_qs(parsed_url.query)
+        dt = qs.get('flight_date')[0].replace('-', '_')
+        n = qs.get('flight_number')[0]
+        return dt, n
 
 
 async def download_reports_for_month(
@@ -161,10 +175,13 @@ async def _download_reports_for_month(
 
         for i, flight in enumerate(flights, start=1):
             html_flight = await scraper.get_one_flight_page(flight)
-            hrefs = Parser(html_flight).get_flight_report_hrefs()
+            hrefs = Parser(html_flight).get_flight_report_hrefs(month)
             urls = [f'https://edu.rossiya-airlines.com{href}' for href in hrefs]
             log_and_print(f'{i}/{len(flights)} | Parsed {len(urls)=}')
 
             for url in urls:
+                dt, number = Parser.get_flight_data_from_url(url)
+                filepath = scraper.get_filepath_by_flight_data(dt=dt, n=number)
+
                 log_and_print(f'Start downloading {url=}')
-                await scraper.download_file(url)
+                await scraper.download_file(url=url, filepath=filepath)
