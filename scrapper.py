@@ -122,7 +122,7 @@ class Parser:
 
         for tr in table.find('tbody').find_all('tr', {'hidden': None}):
             tds = tr.find_all('td')
-            dt = datetime.strptime(tds[column_idx_dt].text, '%d-%m-%Y %H:%M').strftime('%-m.%Y')
+            dt = datetime.strptime(tds[column_idx_dt].text, '%d-%m-%Y %H:%M').strftime('%m.%Y').lstrip('0')
             target = tds[column_idx_target].text
             button_report = tr.find('button', {'title': 'Отчёт по рейсу'})
 
