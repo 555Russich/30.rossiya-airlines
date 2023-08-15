@@ -7,7 +7,6 @@ if getattr(sys, 'frozen', False):
     DIR_PROJECT = Path(sys.executable).parent
 else:
     DIR_PROJECT = Path(__file__).resolve().parent
-print(f'{DIR_PROJECT=}')
 
 DIR_REPORTS = DIR_PROJECT / 'Reports'
 DIR_REPORTS.mkdir(exist_ok=True)
