@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import ssl
 import json
@@ -76,12 +77,19 @@ class Scraper:
 
     async def download_file(self, url: str, filepath: Path) -> None:
         async with self.session.get(url) as resp:
+            if resp.content_type != 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+                return log_and_print(f'This content type is not looking like xlsx document {resp.content_type=}')
+
             with open(filepath, 'wb') as f:
                 f.write(await resp.read())
 
     @staticmethod
     def get_filepath_by_flight_data(dt: str, n: str) -> Path:
-        return DIR_REPORTS / f'flight_report__{dt}__{n}.xlsx'
+        filepath = DIR_REPORTS / f'flight_report__{dt}__{n}.xlsx'
+        i = 1
+        while filepath.exists():
+            filepath = filepath.with_stem(f'{filepath.stem}_{i}')
+        return filepath
 
     async def __aenter__(self):
         conn = TCPConnector(ssl=self._ssl_context)
@@ -181,7 +189,31 @@ async def _download_reports_for_month(
 
             for url in urls:
                 dt, number = Parser.get_flight_data_from_url(url)
+                log_and_print(f'{dt=} | {number=}')
                 filepath = scraper.get_filepath_by_flight_data(dt=dt, n=number)
 
                 log_and_print(f'Start downloading {url=}')
                 await scraper.download_file(url=url, filepath=filepath)
+
+
+async def main():
+    hrefs = (
+        '/workplan/view_flight_report-1?flight_date=24-05-2023&flight_number=ФВ6165&legnum=1&departure_airport_id=513&arrival_airport_id=513&id_para=1184317',
+        '/workplan/view_flight_report-1?flight_date=24-05-2023&flight_number=%D0%A4%D0%926165&legnum=2&departure_airport_id=513&arrival_airport_id=714&id_para=1184317',
+        '/workplan/view_flight_report-1?flight_date=24-05-2023&flight_number=ФВ6166&legnum=1&departure_airport_id=714&arrival_airport_id=513&id_para=1184317'
+    )
+    for href in hrefs:
+        url = 'https://edu.rossiya-airlines.com' + href
+        dt, n = Parser.get_flight_data_from_url(url)
+        print(f'{dt=} | {n=}')
+        async with Scraper(login='124686', password='Sdm000003') as scraper:
+            await scraper.download_file(url, Path('test'))
+
+
+    #         url='https://edu.rossiya-airlines.com/workplan/view_flight_report-1?flight_date=24-05-2023&flight_number=%D0%A4%D0%926165&legnum=2&departure_airport_id=513&arrival_airport_id=714&id_para=1184317',
+    #         filepath=Path('test.xlsx')
+    #     )
+
+
+if __name__ == '__main__':
+    asyncio.run(main())
