@@ -146,7 +146,7 @@ class Parser:
     def get_flight_data_from_url(url: str) -> tuple[str, str]:
         parsed_url = urlparse(url)
         qs = parse_qs(parsed_url.query)
-        dt = qs.get('flight_date')[0].replace('-', '_')
+        dt = datetime.strptime(qs.get('flight_date')[0], '%d-%m-%Y').strftime('%Y_%m_%d')
         n = qs.get('flight_number')[0]
         return dt, n
 
